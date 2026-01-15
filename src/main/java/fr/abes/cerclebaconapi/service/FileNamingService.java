@@ -52,6 +52,6 @@ public class FileNamingService {
                 forceOption = forceOption.toUpperCase();
             }
 }
-        return new FileKbartTSV(provider, pckgeZone, pckge, forceOption, pckgeDate);
+        return new FileKbartTSV(filename, provider, pckgeZone, pckge, forceOption, pckgeDate);
     }
 }

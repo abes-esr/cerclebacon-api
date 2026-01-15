@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class FileKbartTSV {
+    private String filename;
     private String provider;
     private String zone;
     private String packageName;
@@ -13,7 +14,8 @@ public class FileKbartTSV {
     private String ErrorsUrl;
     private String date;
 
-    public FileKbartTSV(String provider, String zone, String packageName, String forceOption, String date) {
+    public FileKbartTSV(String filename, String provider, String zone, String packageName, String forceOption, String date) {
+        this.filename = filename;
         this.provider = provider;
         this.zone = zone;
         this.packageName = packageName;
