@@ -17,7 +17,7 @@ public class FileController {
 
     private final FileNamingService fileNamingService;
 
-    @Value("${pathToLoad}")
+    @Value("${path.toLoad}")
     private String pathToLoad;
 
     public FileController(FileNamingService fileNamingService) {
