@@ -35,8 +35,8 @@ public class FileController {
                     FileKbartTSV file = fileNamingService.getFileKbartTSV(fichier.getName());
                     File fileLog = new File(fichier.getAbsolutePath().replace(".tsv", ".log"));
                     File fileErr = new File(fichier.getAbsolutePath().replace(".tsv", ".bad"));
-                    file.setLogsUrl(fileLog.exists() ? fileLog.getAbsolutePath() : null );
-                    file.setErrorsUrl(fileErr.exists() ? fileErr.getAbsolutePath() : null );
+                    file.setLogsFilename(fileLog.exists() ? fileLog.getName() : null );
+                    file.setErrorsFilename(fileErr.exists() ? fileErr.getName() : null );
                     result.add(file);
                 }
             }

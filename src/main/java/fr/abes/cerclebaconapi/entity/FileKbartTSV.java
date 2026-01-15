@@ -10,8 +10,8 @@ public class FileKbartTSV {
     private String packageName;
     private String forceOption;
     private String linesUrl;
-    private String logsUrl;
-    private String ErrorsUrl;
+    private String logsFilename;
+    private String ErrorsFilename;
     private String date;
 
     public FileKbartTSV(String filename, String provider, String zone, String packageName, String forceOption, String date) {
