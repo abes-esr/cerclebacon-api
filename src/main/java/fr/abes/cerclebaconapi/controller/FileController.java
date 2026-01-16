@@ -62,7 +62,7 @@ public class FileController {
             return ResponseEntity.badRequest().body("Le chemin est incorrect");
         }
         try {
-            File fichier = isReport ? new File(pathToLoad + path + File.separator + fileName) : new File(pathToLoad + fileName);
+            File fichier = isReport ? new File(pathToLoad + path + File.separator + fileName) : new File(pathToLoad + File.separator + fileName);
 
             if (!fichier.exists()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Le fichier " + fileName + " est introuvable.");
