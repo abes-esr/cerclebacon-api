@@ -4,12 +4,11 @@ import lombok.Data;
 
 @Data
 public class FileKbartTSV {
-    private String filename;
     private String provider;
     private String zone;
     private String packageName;
     private String forceOption;
-    private String linesUrl;
+    private String filename;
     private String logsFilename;
     private String ErrorsFilename;
     private String date;
