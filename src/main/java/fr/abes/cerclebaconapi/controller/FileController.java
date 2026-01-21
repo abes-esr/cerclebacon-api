@@ -1,5 +1,6 @@
 package fr.abes.cerclebaconapi.controller;
 
+import fr.abes.cerclebaconapi.dto.RenameFileRequestDto;
 import fr.abes.cerclebaconapi.entity.FileKbartTSV;
 import fr.abes.cerclebaconapi.service.FileNamingService;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,14 +9,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,5 +85,28 @@ public class FileController {
             // This should ideally never happen given the file.exists() check, but it's good practice to keep it.
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la lecture du fichier : " + e.getMessage());
         }
+    }
+
+    @PostMapping(value = "/renameFile")
+    public ResponseEntity<?> renameFile(@RequestBody RenameFileRequestDto renameFileRequestDto) throws IOException {
+        if (!(renameFileRequestDto.getForceOption().equals("FORCE") || renameFileRequestDto.getForceOption().equals("BYPASS") || renameFileRequestDto.getForceOption().isEmpty())) {
+            return ResponseEntity.badRequest().body("Le paramètre ForceOption est invalide.");
+        }
+
+        File fichierSource = new File(pathToLoad + File.separator + renameFileRequestDto.getFileName());
+        Path pathSource = Path.of(fichierSource.getAbsolutePath());
+
+        if (!fichierSource.exists()) {
+            return ResponseEntity.badRequest().body("Le fichier n'existe pas");
+        }
+
+        String fileNameCible = fileNamingService.renameFile(renameFileRequestDto.getFileName(), renameFileRequestDto.getForceOption());
+
+        File fichierCible = new File(pathToLoad + File.separator + fileNameCible);
+
+        Path pathCible = Path.of(fichierCible.getAbsolutePath());
+        Files.move(pathSource, pathCible, StandardCopyOption.REPLACE_EXISTING);
+
+        return ResponseEntity.ok().build();
     }
 }
