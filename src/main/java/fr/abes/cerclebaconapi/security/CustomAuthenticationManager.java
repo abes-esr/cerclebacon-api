@@ -1,6 +1,7 @@
 package fr.abes.cerclebaconapi.security;
 
 import fr.abes.cerclebaconapi.exception.WsAuthException;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -23,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 
 @Slf4j
@@ -40,12 +42,12 @@ public class CustomAuthenticationManager implements AuthenticationManager {
 
 
     @Override
-    public Authentication authenticate(Authentication authentication)
+    public Authentication authenticate(@NonNull Authentication authentication)
             throws AuthenticationException {
         log.debug("entree dans authenticate...");
 
         String name = authentication.getName();
-        String password = authentication.getCredentials().toString();
+        String password = Objects.requireNonNull(authentication.getCredentials()).toString();
         try {
             User u = this.callWsAuth(name, password);
             List<GrantedAuthority> authorities;
@@ -75,7 +77,7 @@ public class CustomAuthenticationManager implements AuthenticationManager {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             restTemplate.getMessageConverters()
-                    .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+                    .addFirst(new StringHttpMessageConverter(StandardCharsets.UTF_8));
             HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
             User user = restTemplate.postForObject(this.urlWsAuthSudoc, entity, User.class);
             if (user == null) {

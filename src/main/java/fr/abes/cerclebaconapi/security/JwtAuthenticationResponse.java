@@ -1,8 +1,11 @@
 package fr.abes.cerclebaconapi.security;
 
+import lombok.Getter;
+
+@Getter
 public class JwtAuthenticationResponse {
     private String accessToken;
-    private String tokenType = "Bearer";
+    private final String tokenType = "Bearer";
     private String userNum;
     private String shortName;
     private String iln;
@@ -21,26 +24,4 @@ public class JwtAuthenticationResponse {
         this.email = email;
     }
 
-    public String getAccessToken() {
-        return accessToken;
-    }
-    public String getTokenType() {
-        return tokenType;
-    }
-    public String getUserNum() {
-        return userNum;
-    }
-    public String getShortName() {
-        return shortName;
-    }
-    public String getIln() {
-        return iln;
-    }
-    public String getRole() {
-        return role;
-    }
-
-    public String getEmail() {
-        return email;
-    }
 }

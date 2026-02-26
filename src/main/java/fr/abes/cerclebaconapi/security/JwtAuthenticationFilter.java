@@ -1,6 +1,5 @@
 package fr.abes.cerclebaconapi.security;
 
-import fr.abes.cerclebaconapi.constant.Constant;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,11 +22,14 @@ import java.util.List;
 @Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtTokenProvider tokenProvider;
+    private final JwtTokenProvider tokenProvider;
 
-    @Autowired
-    private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
+
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, LoginAttemptService loginAttemptService) {
+        this.tokenProvider = tokenProvider;
+        this.loginAttemptService = loginAttemptService;
+    }
 
 
     @Override
@@ -35,7 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String ip = getClientIP(request);
             if (loginAttemptService.isBlocked(ip)) {
-                throw new RuntimeException(Constant.IP_BLOCKED);
+                throw new RuntimeException("IP_BLOCKED");
             }
 
             String jwt = tokenProvider.getJwtFromRequest(request);
@@ -51,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 request.setAttribute("iln", u.getIln());
             }
         } catch (Exception ex) {
-            log.error(Constant.ERROR_AUTHENTICATION_IN_SECURITY_CONTEXT, ex);
+            log.error("ERROR_AUTHENTICATION_IN_SECURITY_CONTEXT", ex);
         }
 
         filterChain.doFilter(request, response);

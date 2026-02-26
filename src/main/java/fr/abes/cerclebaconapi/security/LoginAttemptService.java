@@ -3,8 +3,8 @@ package fr.abes.cerclebaconapi.security;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import fr.abes.cerclebaconapi.constant.Constant;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutionException;
@@ -21,7 +21,7 @@ public class LoginAttemptService {
         int nbMinutes = 15;
         attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(nbMinutes, TimeUnit.MINUTES).build(new CacheLoader<>() {
             @Override
-            public Integer load(final String key) {
+            public Integer load(final @NonNull String key) {
                 return 0;
             }
         });
@@ -30,16 +30,16 @@ public class LoginAttemptService {
     //
 
     public void loginSucceeded(final String key) {
-        log.debug(Constant.ENTER_LOGIN_SUCCEED + key);
+        log.debug("ENTER_LOGIN_SUCCEED {}", key);
         attemptsCache.invalidate(key);
     }
 
     public void loginFailed(final String key) {
-        log.debug(Constant.ENTER_LOGIN_FAILED);
+        log.debug("ENTER_LOGIN_FAILED");
         int attempts;
         try {
             attempts = attemptsCache.get(key);
-            log.info(Constant.NUMBER_IP_TENTATIVES + key + " est : " + attempts);
+            log.info("NUMBER_IP_TENTATIVES {} est : {}", key, attempts);
         } catch (final ExecutionException e) {
             attempts = 0;
         }

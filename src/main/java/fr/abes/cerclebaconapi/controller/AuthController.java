@@ -1,10 +1,6 @@
 package fr.abes.cerclebaconapi.controller;
 
-import fr.abes.cerclebaconapi.security.JwtAuthenticationResponse;
-import fr.abes.cerclebaconapi.security.JwtTokenProvider;
-import fr.abes.cerclebaconapi.security.LoginRequest;
-import fr.abes.cerclebaconapi.security.User;
-import fr.abes.cerclebaconapi.security.LoginAttemptService;
+import fr.abes.cerclebaconapi.security.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,29 +25,16 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) throws BadCredentialsException {
-        String ip = getClientIP(request);
-        if (loginAttemptService.isBlocked(ip)) {
-            return ResponseEntity.status(429).body("Votre adresse IP est bloquée suite à trop de tentatives de connexion échouées.");
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) throws BadCredentialsException {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        User user = (User)authentication.getPrincipal();
+        if (user.getAuthorities().isEmpty()) {
+            return ResponseEntity.badRequest().body("Ce login ne dispose pas des droits nécessaires pour accéder à CercleBacon.");
         }
+        String jwt = tokenProvider.generateToken(user);
 
-        try {
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            User user = (User) authentication.getPrincipal();
-            assert user != null;
-            if (user.getAuthorities().isEmpty()) {
-                return ResponseEntity.badRequest().body("Ce login ne dispose pas des droits nécessaires pour accéder à l'application");
-            }
-            String jwt = tokenProvider.generateToken(user);
-
-            loginAttemptService.loginSucceeded(ip);
-
-            return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, user.getUserNum(), user.getShortName(), user.getIln(), user.getRole(), user.getMail()));
-        } catch (BadCredentialsException e) {
-            loginAttemptService.loginFailed(ip);
-            throw e;
-        }
+        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, user.getUserNum(), user.getShortName(), user.getIln(), user.getRole(), user.getMail()));
     }
 
     @GetMapping("/checkToken")
