@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
+@RequestMapping("/api/v1")
 public class FileController {
 
     private final FileNamingService fileNamingService;
@@ -35,6 +37,7 @@ public class FileController {
     }
 
     @GetMapping( "/all")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public List<FileKbartTSV> getAll() {
         File dossier = new File(pathToLoad);
         File[] fichiers = dossier.listFiles();
@@ -55,6 +58,7 @@ public class FileController {
     }
 
     @GetMapping(value = {"/file/{fileName}", "/file/{path}/{fileName}"})
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> getFile(@PathVariable(required = false) String path, @PathVariable String fileName) {
         boolean isReport = ((path != null) && path.equals("report"));
 
@@ -88,6 +92,7 @@ public class FileController {
     }
 
     @PostMapping(value = "/renameFile")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public ResponseEntity<?> renameFile(@RequestBody RenameFileRequestDto renameFileRequestDto) throws IOException {
         if (!(renameFileRequestDto.getForceOption().equals("FORCE") || renameFileRequestDto.getForceOption().equals("BYPASS") || renameFileRequestDto.getForceOption().isEmpty())) {
             return ResponseEntity.badRequest().body("Le paramètre ForceOption est invalide.");
