@@ -10,7 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +42,7 @@ public class FileController {
         this.fileNamingService = fileNamingService;
     }
 
-    @GetMapping( "/all")
+    @GetMapping("/all")
     @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public List<FileKbartTSV> getAll() {
         File dossier = new File(pathToLoad);
@@ -44,12 +50,12 @@ public class FileController {
         List<FileKbartTSV> result = new ArrayList<>();
         if (fichiers != null) {
             for (File fichier : fichiers) {
-                if( fichier.getName().endsWith(".tsv")) {
+                if (fichier.getName().endsWith(".tsv")) {
                     FileKbartTSV file = fileNamingService.getFileKbartTSV(fichier.getName());
                     File fileLog = new File(fichier.getAbsolutePath().replace(".tsv", ".log"));
                     File fileErr = new File(fichier.getAbsolutePath().replace(".tsv", ".bad"));
-                    file.setLogsFilename(fileLog.exists() ? fileLog.getName() : null );
-                    file.setErrorsFilename(fileErr.exists() ? fileErr.getName() : null );
+                    file.setLogsFilename(fileLog.exists() ? fileLog.getName() : null);
+                    file.setErrorsFilename(fileErr.exists() ? fileErr.getName() : null);
                     result.add(file);
                 }
             }
@@ -64,7 +70,7 @@ public class FileController {
 
         if (fileName == null || fileName.isEmpty()) {
             return ResponseEntity.badRequest().body("Le paramètre fileName est vide.");
-        } else if ((path != null) && !path.equals("report")){
+        } else if ((path != null) && !path.equals("report")) {
             return ResponseEntity.badRequest().body("Le chemin est incorrect");
         }
         try {
@@ -78,7 +84,7 @@ public class FileController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fichier.getName());
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM); // Use setContentType for better clarity
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
             return ResponseEntity.ok()
                     .headers(headers)
@@ -86,7 +92,6 @@ public class FileController {
                     .body(new InputStreamResource(fs));
 
         } catch (FileNotFoundException e) {
-            // This should ideally never happen given the file.exists() check, but it's good practice to keep it.
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la lecture du fichier : " + e.getMessage());
         }
     }

@@ -1,14 +1,23 @@
 package fr.abes.cerclebaconapi.controller;
 
-import fr.abes.cerclebaconapi.security.*;
 import jakarta.servlet.http.HttpServletRequest;
+import fr.abes.cerclebaconapi.security.JwtAuthenticationResponse;
+import fr.abes.cerclebaconapi.security.JwtTokenProvider;
+import fr.abes.cerclebaconapi.security.LoginRequest;
+import fr.abes.cerclebaconapi.security.User;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
@@ -17,25 +26,44 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
-    private final LoginAttemptService loginAttemptService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider, LoginAttemptService loginAttemptService) {
+    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider tokenProvider) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
-        this.loginAttemptService = loginAttemptService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) throws BadCredentialsException {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User user = (User)authentication.getPrincipal();
-        if (user.getAuthorities().isEmpty()) {
-            return ResponseEntity.badRequest().body("Ce login ne dispose pas des droits nécessaires pour accéder à CercleBacon.");
-        }
-        String jwt = tokenProvider.generateToken(user);
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, user.getUserNum(), user.getShortName(), user.getIln(), user.getRole(), user.getMail()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            User user = (User) authentication.getPrincipal();
+
+            if (user.getAuthorities().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Ce compte ne dispose pas des droits nécessaires pour accéder à CercleBacon.");
+            }
+
+            String jwt = tokenProvider.generateToken(user);
+
+            return ResponseEntity.ok(new JwtAuthenticationResponse(
+                    jwt,
+                    user.getUserNum(),
+                    user.getShortName(),
+                    user.getIln(),
+                    user.getRole(),
+                    user.getMail()
+            ));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Identifiant ou mot de passe incorrect. Veuillez vérifier vos informations de connexion.");
+        }
     }
 
     @GetMapping("/checkToken")
@@ -43,13 +71,5 @@ public class AuthController {
         String jwt = tokenProvider.getJwtFromRequest(request);
         if (jwt == null) return false;
         return tokenProvider.validateToken(jwt);
-    }
-
-    private String getClientIP(HttpServletRequest request) {
-        final String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0];
     }
 }

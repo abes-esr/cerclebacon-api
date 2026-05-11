@@ -3,16 +3,17 @@ package fr.abes.cerclebaconapi.security;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 @Service
 public class LoginAttemptService {
+
+    private static final Logger log = LoggerFactory.getLogger(LoginAttemptService.class);
 
     private final LoadingCache<String, Integer> attemptsCache;
 
@@ -21,7 +22,7 @@ public class LoginAttemptService {
         int nbMinutes = 15;
         attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(nbMinutes, TimeUnit.MINUTES).build(new CacheLoader<>() {
             @Override
-            public Integer load(final @NonNull String key) {
+            public Integer load(final String key) {
                 return 0;
             }
         });

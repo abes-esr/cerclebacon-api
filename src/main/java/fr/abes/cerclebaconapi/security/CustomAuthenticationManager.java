@@ -1,13 +1,13 @@
 package fr.abes.cerclebaconapi.security;
 
 import fr.abes.cerclebaconapi.exception.WsAuthException;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,10 +26,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-
-@Slf4j
 @Component
 public class CustomAuthenticationManager implements AuthenticationManager {
+
+    private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationManager.class);
 
     private final AuthenticationEventPublisher authenticationEventPublisher;
 
@@ -42,7 +42,7 @@ public class CustomAuthenticationManager implements AuthenticationManager {
 
 
     @Override
-    public Authentication authenticate(@NonNull Authentication authentication)
+    public Authentication authenticate(Authentication authentication)
             throws AuthenticationException {
         log.debug("entree dans authenticate...");
 
@@ -87,7 +87,7 @@ public class CustomAuthenticationManager implements AuthenticationManager {
         }
         catch (Exception e) {
             log.error("rejet du service web d'authentification Sudoc " + e);
-            throw new WsAuthException("Une erreur s'est produite : Identifiant ou mot de passe incorrect.");
+            throw new WsAuthException("Identifiant ou mot de passe incorrect. Veuillez vérifier vos informations de connexion.");
         }
     }
 }

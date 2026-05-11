@@ -1,54 +1,63 @@
 package fr.abes.cerclebaconapi.security;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-@NoArgsConstructor
 public class User implements UserDetails {
-    @Getter @Setter
     private Collection<? extends GrantedAuthority> authorities;
-
-    @Getter @Setter
     private String userNum;
-
-    @Getter @Setter
     private String userKey;
-
-    @Getter @Setter
     private String userGroup;
-
-    @Setter
     private String role;
-
-    @Getter @Setter
     private String library;
-
-    @Getter @Setter
     private String shortName;
-
-    @Getter @Setter
     private String loginAllowed;
-
-    @Getter @Setter
     private String iln;
-
-    @Getter @Setter
     private String libRcr;
-
-    @Getter @Setter
     private String mail;
-
-    @Getter @Setter
     private String password;
+
+    public User() {
+    }
 
     public User(String userNum, String userKey, String userGroup) {
         this.userNum = userNum;
         this.userKey = userKey;
+        this.userGroup = userGroup;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
+        this.authorities = authorities;
+    }
+
+    public String getUserNum() {
+        return userNum;
+    }
+
+    public void setUserNum(String userNum) {
+        this.userNum = userNum;
+    }
+
+    public String getUserKey() {
+        return userKey;
+    }
+
+    public void setUserKey(String userKey) {
+        this.userKey = userKey;
+    }
+
+    public String getUserGroup() {
+        return userGroup;
+    }
+
+    public void setUserGroup(String userGroup) {
         this.userGroup = userGroup;
     }
 
@@ -60,6 +69,67 @@ public class User implements UserDetails {
                 role = "ADMIN";
         }
         return this.role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getLibrary() {
+        return library;
+    }
+
+    public void setLibrary(String library) {
+        this.library = library;
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
+
+    public String getLoginAllowed() {
+        return loginAllowed;
+    }
+
+    public void setLoginAllowed(String loginAllowed) {
+        this.loginAllowed = loginAllowed;
+    }
+
+    public String getIln() {
+        return iln;
+    }
+
+    public void setIln(String iln) {
+        this.iln = iln;
+    }
+
+    public String getLibRcr() {
+        return libRcr;
+    }
+
+    public void setLibRcr(String libRcr) {
+        this.libRcr = libRcr;
+    }
+
+    public String getMail() {
+        return mail;
+    }
+
+    public void setMail(String mail) {
+        this.mail = mail;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override
