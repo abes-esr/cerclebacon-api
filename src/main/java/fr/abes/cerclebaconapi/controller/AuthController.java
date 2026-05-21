@@ -26,16 +26,44 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) throws BadCredentialsException {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User user = (User)authentication.getPrincipal();
-        if (user.getAuthorities().isEmpty()) {
-            return ResponseEntity.badRequest().body("Ce login ne dispose pas des droits nécessaires pour accéder à CercleBacon.");
-        }
-        String jwt = tokenProvider.generateToken(user);
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, user.getUserNum(), user.getShortName(), user.getIln(), user.getRole(), user.getMail()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            User user = (User) authentication.getPrincipal();
+
+            if (user.getAuthorities().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body("Ce login ne dispose pas des droits nécessaires pour accéder à CercleBacon.");
+            }
+
+            String jwt = tokenProvider.generateToken(user);
+
+            return ResponseEntity.ok(
+                    new JwtAuthenticationResponse(
+                            jwt,
+                            user.getUserNum(),
+                            user.getShortName(),
+                            user.getIln(),
+                            user.getRole(),
+                            user.getMail()
+                    )
+            );
+
+        } catch (BadCredentialsException e) {
+            return ResponseEntity
+                    .status(401)
+                    .body(java.util.Map.of(
+                            "message",
+                            "Identifiant ou mot de passe incorrect."
+                    ));
+        }
     }
 
     @GetMapping("/checkToken")
